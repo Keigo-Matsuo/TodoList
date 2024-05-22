@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ToDo List</title>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+</head>
+<body>
+	
+    <!-- 検索フォーム -->
+    <form th:action="@{/}" method="post" th:object="${todoQuery}">
+        <div style="display: flex">
+            <table border="1">
+                <tr>
+                    <th>Title</th>
+                    <th>Importance</th>
+                    <th>Urgency</th>
+                    <th>Deadline</th>
+                    <th>Done</th>
+                </tr>
+
+                <tr>
+                    <td>
+                        <input type="text" name="title" size="40" th:value="*{title}">
+                    </td>
+                    <td>
+                        <select name="importance">
+                            <option value="-1" th:field="*{importance}">-</option>
+                            <option value="1" th:field="*{importance}">High</option>
+                            <option value="0" th:field="*{importance}">Low</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="urgency">
+                            <option value="-1" th:field="*{urgency}">-</option>
+                            <option value="1" th:field="*{urgency}">High</option>
+                            <option value="0" th:field="*{urgency}">Low</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" name="deadlineFrom" th:value="*{deadlineFrom}" size="10" placeholder="yyyy-mm-dd">
+                        ～
+                        <input type="text" name="deadlineTo" th:value="*{deadlineTo}" size="10" placeholder="yyyy-mm-dd">
+                    </td>
+                    <td>
+                        <input type="checkbox" value="Y" th:field="*{done}">done
+                    </td>
+                </tr>
+            </table>
+
+            <button type="submit" th:formaction="@{/todo/query}">Serch</button>
+        </div>
+
+        <div th:if="${#fields.hasErrors('deadlineFrom')}" th:errors="*{deadlineFrom}" th:errorclass="red"></div>
+        <div th:if="${#fields.hasErrors('deadlineTo')}" th:errors="*{deadlineTo}" th:errorclass="red"></div>
+        <hr>
+
+        <button type="submit" th:formaction="@{/todo/create/form}">Add new Todo</button>
+    </form>
+
+    <!-- 一覧表示 -->
+    <!-- th:object="${todoData}" ： form内要素でtodoDataが使えるようになる。*{プロパティ名}でアクセス -->
+	<!-- <a th:href="@{/todo/create}"><i class="fa-solid fa-circle-plus"></i> new</a> -->
+	
+    <table border="1">
+        <tr>
+            <th>Id</th>
+            <th>Title</th>
+            <th>Importance</th>
+            <th>Urgency</th>
+            <th>Deadline</th>
+            <th>Done</th>
+        </tr>
+        <tr th:each="todo : ${todoList}">
+            <td th:text="${todo.id}"></td>
+            <td><a th:href="@{/todo/__${todo.id}__}" th:text="${todo.title}"></a></td>
+            <td th:text="${todo.importance == 1 ? '★★★' : '★'}"></td>
+            <td th:text="${todo.urgency == 1 ? '★★★' : '★'}"></td>
+            <td th:text="${todo.deadline}"></td>
+            <td th:text="${todo.done == 'Y' ? 'OK' : ''}"></td>
+        </tr>
+    </table>
+</body>
+</html>
