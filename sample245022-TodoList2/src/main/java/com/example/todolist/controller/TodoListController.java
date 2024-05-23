@@ -10,22 +10,36 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.example.todolist.dao.TodoDaoImpl;
 import com.example.todolist.entity.Todo;
 import com.example.todolist.form.TodoData;
 import com.example.todolist.form.TodoQuery;
 import com.example.todolist.repository.TodoRepository;
 import com.example.todolist.service.TodoService;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Controller
-@AllArgsConstructor
+@RequiredArgsConstructor // final指定されたメンバ変数だけを対象としたコンストラクタを生成
+//@AllArgsConstructor
 public class TodoListController {
 	private final TodoRepository todoRepository;
 	private final TodoService todoService;
 	private final HttpSession session;
+	
+	@PersistenceContext
+	private EntityManager entityManager;
+	TodoDaoImpl todoDaoImpl;
+	
+	@PostConstruct
+	public void init() {
+		todoDaoImpl = new TodoDaoImpl(entityManager);
+	}
 	
 	// ToDo一覧表示
 	@GetMapping("/todo")
@@ -42,7 +56,13 @@ public class TodoListController {
 		
 		if (todoService.isValid(todoQuery, bindingResult)) {
 			// エラーがなければ検索
-			todoList = todoService.doQuery(todoQuery);
+//			todoList = todoService.doQuery(todoQuery);
+			
+			// JPQLによる検索
+			todoList = todoDaoImpl.findByJPQL(todoQuery);
+			
+			// Criteria APIによる検索
+//			todoList = todoDaoImpl.findByCriteria(todoQuery);
 		}
 		
 		model.addAttribute("todoList", todoList);
@@ -51,7 +71,7 @@ public class TodoListController {
 	}
 	
 	// ToDo入力フォーム表示
-	@GetMapping("/todo/create")
+	@PostMapping("/todo/create/form")
 	public String createTodo(Model model) {
 		model.addAttribute("todoData", new TodoData());
 		session.setAttribute("mode", "create");
@@ -59,7 +79,7 @@ public class TodoListController {
 	}
 	
 	// ToDo追加処理
-	@PostMapping("/todo/create")
+	@PostMapping("/todo/create/do")
 	public String createTodo(@Valid TodoData todoData, BindingResult bindingResult, Model model) {
 		// エラーチェック
 		boolean isValid = todoService.isValid(todoData, bindingResult);

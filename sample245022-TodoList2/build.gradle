@@ -32,6 +32,9 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	
+	// jpa modelgenの追加
+	//annotationProcessor 'org.hibernate:hibernate-jpamodelgen:6.1.5.Final'
 }
 
 tasks.named('test') {
